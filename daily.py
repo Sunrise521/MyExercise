@@ -106,6 +106,7 @@ def init_config(DIR_NAME):
         logOut("Let's Begin!")
 
 while True:
+        # 判断条件
         timeNow = time.strftime("%H:%M", time.localtime())
         weekDay = time.strftime("%w", time.localtime())
         if(First_Login):
