@@ -59,20 +59,21 @@ def login(user, pwd, dir):
                 # a = browser.find_by_tag("a")
                 browser.execute_script('$(".mr36")[0].click()')
                 time.sleep(1)
-                browser.quit()
         except Exception as identify:
                 logOut(str(identify))
-                print(time.strftime("%H:%M:%S", time.localtime()), "打卡失败")
+                print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡失败")
+                browser.quit()
         else:
-                print(time.strftime("%H:%M:%S", time.localtime()), "打卡成功")        
+                print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡成功")   
+                browser.quit()     
 
 def init_time():
         global First_Login_Time
         global Second_Login_Time
         First_Login_Time = "08:" + str(randint(0, 30) + 29)
-        print("First_Login_Time:",First_Login_Time)
+        print(time.strftime("%D", time.localtime()),"First_Login_Time:",First_Login_Time)
         Second_Login_Time = "18:" + str(randint(0, 30) + 10)
-        print("Second_Login_Time", Second_Login_Time)
+        print(time.strftime("%D", time.localtime()),"Second_Login_Time", Second_Login_Time)
 
 def logOut(content):
         with open("D:\\daily\\log.txt", "a") as log:
@@ -118,7 +119,7 @@ while True:
                 login(USER_NAME,USER_PWD,DIR_NAME)
         if(time.strftime("%H:%M", time.localtime()) == "00:00"):
                 init_time()
-        if(timeNow == First_Login_Time or timeNow == Second_Login_Time and not(weekDay == "5" or weekDay == "6")):
+        if(timeNow == First_Login_Time or timeNow == Second_Login_Time and not(weekDay == "0" or weekDay == "6")):
         # if(True):
                 login(USER_NAME,USER_PWD,DIR_NAME)
         time.sleep(60)
