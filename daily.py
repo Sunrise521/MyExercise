@@ -40,32 +40,38 @@ def imgOcr(imagURL):
                         return num                
 
 def login(user, pwd, dir):
-        DiverUrl = dir + "\\driver\\firefoxdriver.exe"
-        executable_path = {'executable_path':DiverUrl}     
+        DiverUrl = dir + "\\driver\\chromedriver.exe"
+        executable_path = {'executable_path':DiverUrl}
         try:
-                browser = Browser("firefox", **executable_path)
-                browser.visit("http://kq.neusoft.com")
-                # input = browser.find_by_tag("input")
-                browser.find_by_tag("input")[4].fill(user)
-                browser.find_by_tag("input")[5].fill(pwd)
-                if not os.path.exists(dir + "\\temp"):
-                        os.mkdir(dir + "\\temp")
-                imagURL = dir + "\\temp\\ocr.jpg"
-                screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True)
-                ocrResult = imgOcr(screenshot_path)
-                browser.find_by_tag("input")[6].fill(ocrResult)
-                browser.find_by_id("loginButton").click()
-                time.sleep(3)
-                # a = browser.find_by_tag("a")
-                browser.execute_script('$(".mr36")[0].click()')
-                time.sleep(1)
+                with Browser("chrome", **executable_path) as browser:
+                        try:
+                                alert = browser.get_alert()
+                        except Exception:
+                                pass
+                        else:
+                                alert.dismiss()                                       
+                        # browser = Browser("chrome", **executable_path)
+                        browser.visit("http://kq.neusoft.com")
+                        # input = browser.find_by_tag("input")
+                        browser.find_by_tag("input")[4].fill(user)
+                        browser.find_by_tag("input")[5].fill(pwd)
+                        if not os.path.exists(dir + "\\temp"):
+                                os.mkdir(dir + "\\temp")
+                        imagURL = dir + "\\temp\\ocr.jpg"
+                        screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True)
+                        ocrResult = imgOcr(screenshot_path)
+                        time.sleep(3)
+                        browser.find_by_tag("input")[6].fill(ocrResult)
+                        browser.find_by_id("loginButton").click()
+                        time.sleep(3)
+                        # a = browser.find_by_tag("a")
+                        browser.execute_script('$(".mr36")[0].click()')
+                        time.sleep(1)
         except Exception as identify:
                 logOut(str(identify))
                 print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡失败")
-                browser.quit()
         else:
-                print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡成功")   
-                browser.quit()     
+                print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡成功") 
 
 def init_time():
         global First_Login_Time
