@@ -11,7 +11,6 @@ proxies = {"http" : "http://def:qwertgfdsa@10.1.24.38:3333", "https" : "https://
 client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
 client.setProxies(proxies)  #设置http代理 
 First_Login = True
-Second_Login = False
 global First_Login_Time
 First_Login_Time = "08:45"
 global Second_Login_Time
@@ -37,41 +36,49 @@ def imgOcr(imagURL):
                 except ValueError:
                         pass
                 else:
-                        return num                
+                        return num
+        return 0                
 
 def login(user, pwd, dir):
         DiverUrl = dir + "\\driver\\chromedriver.exe"
         executable_path = {'executable_path':DiverUrl}
-        try:
+        if not os.path.exists(dir + "\\temp"):
+                                os.mkdir(dir + "\\temp")
+        imagURL = dir + "\\temp\\ocr.jpg"
+        loginFlag = True
+        dailyFlag = True
+        while(loginFlag or dailyFlag):
                 with Browser("chrome", **executable_path) as browser:
                         try:
                                 alert = browser.get_alert()
                         except Exception:
                                 pass
                         else:
-                                alert.dismiss()                                       
-                        # browser = Browser("chrome", **executable_path)
-                        browser.visit("http://kq.neusoft.com")
-                        # input = browser.find_by_tag("input")
-                        browser.find_by_tag("input")[4].fill(user)
-                        browser.find_by_tag("input")[5].fill(pwd)
-                        if not os.path.exists(dir + "\\temp"):
-                                os.mkdir(dir + "\\temp")
-                        imagURL = dir + "\\temp\\ocr.jpg"
-                        screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True)
-                        ocrResult = imgOcr(screenshot_path)
-                        time.sleep(3)
-                        browser.find_by_tag("input")[6].fill(ocrResult)
-                        browser.find_by_id("loginButton").click()
-                        time.sleep(3)
-                        # a = browser.find_by_tag("a")
-                        browser.execute_script('$(".mr36")[0].click()')
-                        time.sleep(1)
-        except Exception as identify:
-                logOut(str(identify))
-                print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡失败")
-        else:
-                print(time.strftime("%D %H:%M:%S", time.localtime()), "打卡成功") 
+                                alert.dismiss()                             
+                        try:
+                                if loginFlag:
+                                        browser.visit("http://kq.neusoft.com")
+                                        input = browser.find_by_tag("input")
+                                        input[4].fill(user)
+                                        input[5].fill(pwd)
+                                        screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True)
+                                        ocrResult = imgOcr(screenshot_path)
+                                        if ocrResult is 0:
+                                                logOut("图片路径:" + screenshot_path + ",识别失败")
+                                                continue
+                                        print(time.strftime("%D %H:%M:%S", time.localtime()), "识别验证码为:", ocrResult)
+                                        browser.find_by_tag("input")[6].fill(ocrResult)
+                                        browser.find_by_id("loginButton").click()
+                                loginFlag = False
+                                logOut("登陆成功")
+                                if dailyFlag:
+                                        browser.execute_script('$(".mr36")[0].click()')
+                                        time.sleep(1)
+                                dailyFlag = False
+                                logOut("打卡成功")
+                        except Exception as identify:
+                                logOut("打卡失败:" + str(identify))
+                                pass                      
 
 def init_time():
         global First_Login_Time
@@ -82,8 +89,10 @@ def init_time():
         print(time.strftime("%D", time.localtime()),"Second_Login_Time", Second_Login_Time)
 
 def logOut(content):
+        content = time.strftime("%H:%M:%S", time.localtime()) + ": " + content + "\n"
+        print(content)
         with open("D:\\daily\\log.txt", "a") as log:
-                log.write(time.strftime("%H:%M:%S", time.localtime()) + ": " + content + "\n")
+                log.write(content)
 
 def init_config(DIR_NAME):
         global USER_NAME
@@ -94,7 +103,11 @@ def init_config(DIR_NAME):
                         if not os.path.exists(DiverUrl):
                                 os.mkdir(DiverUrl)
                                 print("请将firefoxdriver文件放置于:" + DiverUrl + "路径下")
-        with open(DIR_NAME + "\\log.txt","w") as log:
+        try:
+                with open(DIR_NAME + "\\log.txt" , "a") as log:
+                        log.write("----begin init config----\n")
+        except FileNotFoundError:
+                with open(DIR_NAME+"\\log.txt", "w") as log:
                         log.write("----begin init config----\n")
         try:
                 config = open(DIR_NAME+"\\config.txt")
@@ -110,7 +123,6 @@ def init_config(DIR_NAME):
                 USER_NAME = configs[0].rstrip()
                 USER_PWD = configs[1].rstrip()
                 config.close
-        logOut("Let's Begin!")
 
 while True:
         # 判断条件
