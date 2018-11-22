@@ -83,7 +83,7 @@ def init_time(): #初始化打卡时间
         logOut("Second_Login_Time:" + Second_Login_Time)
 
 def logOut(content): #日志处理方法
-        content = time.strftime("%D %H:%M:%S", time.localtime()) + content + "\n" #记录当前时间
+        content = time.strftime("%D %H:%M:%S ", time.localtime()) + content + "\n" #记录当前时间
         print(content) #命令行中输出日志
         with open("D:\\daily\\log.txt", "a+") as log:
                 log.write(content) #向log文件写入日志
