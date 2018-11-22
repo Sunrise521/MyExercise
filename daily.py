@@ -43,7 +43,7 @@ def login(user, pwd, dir):
         DiverUrl = dir + "\\driver\\chromedriver.exe"
         executable_path = {'executable_path':DiverUrl}
         if not os.path.exists(dir + "\\temp"):
-                                os.mkdir(dir + "\\temp")
+                os.mkdir(dir + "\\temp")
         imagURL = dir + "\\temp\\ocr.jpg"
         loginFlag = True
         dailyFlag = True
@@ -83,13 +83,13 @@ def login(user, pwd, dir):
 def init_time():
         global First_Login_Time
         global Second_Login_Time
-        First_Login_Time = "08:" + str(randint(0, 30) + 29)
-        print(time.strftime("%D", time.localtime()),"First_Login_Time:",First_Login_Time)
-        Second_Login_Time = "18:" + str(randint(0, 30) + 10)
-        print(time.strftime("%D", time.localtime()),"Second_Login_Time", Second_Login_Time)
+        First_Login_Time = "08:" + str(randint(0, 39) + 20)
+        logOut(time.strftime("%D"+time.localtime())+"First_Login_Time:"+First_Login_Time)
+        Second_Login_Time = "18:" + str(randint(0, 49) + 10)
+        logOut(time.strftime("%D"+ time.localtime())+"Second_Login_Time"+ Second_Login_Time)
 
 def logOut(content):
-        content = time.strftime("%H:%M:%S", time.localtime()) + ": " + content + "\n"
+        content = time.strftime("%D %H:%M:%S", time.localtime()) + ": " + content + "\n"
         print(content)
         with open("D:\\daily\\log.txt", "a") as log:
                 log.write(content)
