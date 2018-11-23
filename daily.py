@@ -42,37 +42,41 @@ def login(user, pwd, dir):
         imagURL = dir + "\\temp\\ocr.jpg"
         loginFlag = True
         dailyFlag = True
+        browser = Browser("chrome", **executable_path)
         while(loginFlag or dailyFlag): #循环直到打卡成功
-                with Browser("chrome", **executable_path) as browser:
-                        try:
-                                alert = browser.get_alert() #如果有代理登陆提示,则点击取消
-                        except Exception:
-                                pass
-                        else:
-                                alert.dismiss()                             
-                        try:
-                                if loginFlag: #将登陆与打卡动作分离,便于判断
-                                        browser.visit("http://kq.neusoft.com")
-                                        input = browser.find_by_tag("input")
-                                        input[4].fill(user)
-                                        input[5].fill(pwd)
-                                        screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True) #因单独截取验证码图片会出现偏离而无法识别,故而截取整个Form,再对识别结果进行处理,最终返回一个截图的路径
-                                        ocrResult = imgOcr(screenshot_path)
-                                        if ocrResult is 0: #避免识别错误导致页面刷新从而出现bug
-                                                logOut("图片路径:" + screenshot_path + ",识别失败")
-                                                continue
-                                        print(time.strftime("%D %H:%M:%S", time.localtime()), "识别验证码为:", ocrResult)
-                                        input[6].fill(ocrResult) #填入验证码识别结果
-                                        browser.find_by_id("loginButton").click() #点击登陆按钮
+                try:
+                        alert = browser.get_alert() #如果有代理登陆提示,则点击取消
+                except Exception:
+                        pass
+                else:
+                        alert.dismiss()                             
+                try:
+                        if loginFlag: #将登陆与打卡动作分离,便于判断
+                                browser.visit("http://kq.neusoft.com")
+                                input = browser.find_by_tag("input")
+                                input[4].fill(user)
+                                input[5].fill(pwd)
+                                screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True) #因单独截取验证码图片会出现偏离而无法识别,故而截取整个Form,再对识别结果进行处理,最终返回一个截图的路径
+                                ocrResult = imgOcr(screenshot_path)
+                                if ocrResult is 0: #避免识别错误导致页面刷新从而出现bug
+                                        logOut("图片路径:" + screenshot_path + ",识别失败")
+                                        continue
+                                print(time.strftime("%D %H:%M:%S", time.localtime()), "识别验证码为:", ocrResult)
+                                input[6].fill(ocrResult) #填入验证码识别结果
+                                browser.find_by_id("loginButton").click() #点击登陆按钮
+                                if browser.is_text_present('打卡'):
                                         loginFlag = False
                                         logOut("登陆成功")
-                                if dailyFlag:
-                                        browser.execute_script('$(".mr36")[0].click()') #直接执行js语句
-                                        time.sleep(1)
+                        if dailyFlag:
+                                timeNow = time.strftime("%H:%M", time.localtime())
+                                browser.find_by_text("打卡").first.click()#直接执行js语句
+                                time.sleep(1)
+                                if browser.is_text_present(timeNow):
                                         dailyFlag = False
                                         logOut("打卡成功")
-                        except Exception as identify:
-                                logOut("打卡失败:" + str(identify)) #直接进入下一循环                      
+                except Exception as identify:
+                        logOut("打卡失败:" + str(identify)) #直接进入下一循环  
+        browser.quit()                    
 
 def init_time(): #初始化打卡时间
         global First_Login_Time
@@ -93,11 +97,11 @@ def init_config(DIR_NAME): #初始化配置方法
         global USER_PWD
         DiverUrl = DIR_NAME + "\\driver"
         if not os.path.exists(DIR_NAME):
-                        os.mkdir(DIR_NAME)
-                        if not os.path.exists(DiverUrl):
-                                os.mkdir(DiverUrl) #初始化driver路径
-                                while not os.path.exists(format(DiverUrl,"\\chromedriver.exe")): #确认driver文件就位
-                                        input("请确认已将chromedriver文件放置于:" + DiverUrl + "路径下? y/n")
+                os.mkdir(DIR_NAME)
+        if not os.path.exists(DiverUrl):
+                os.mkdir(DiverUrl) #初始化driver路径
+        while os.path.exists(DiverUrl+"\\chromedriver.exe") == False: #确认driver文件就位
+                input("请确认已将chromedriver文件放置于:" + DiverUrl + "路径下? y/n")
         try:
                 config = open(DIR_NAME+"\\config.txt") #读取配置文件
         except FileNotFoundError: #异常处理(即首次运行时新建配置文件)
