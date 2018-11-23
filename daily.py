@@ -75,7 +75,7 @@ def login(user, pwd, dir):
                                         dailyFlag = False
                                         logOut("打卡成功")
                 except Exception as identify:
-                        logOut("打卡失败:" + str(identify)) #直接进入下一循环  
+                        logOut("打卡失败:" + str(identify)) #直接进入下一循环 
         browser.quit()                    
 
 def init_time(): #初始化打卡时间
@@ -101,7 +101,7 @@ def init_config(DIR_NAME): #初始化配置方法
         if not os.path.exists(DiverUrl):
                 os.mkdir(DiverUrl) #初始化driver路径
         while os.path.exists(DiverUrl+"\\chromedriver.exe") == False: #确认driver文件就位
-                input("请确认已将chromedriver文件放置于:" + DiverUrl + "路径下? y/n")
+                input("请确认已将chromedriver文件放置于:" + DiverUrl + "\路径下? (y/n) ")
         try:
                 config = open(DIR_NAME+"\\config.txt") #读取配置文件
         except FileNotFoundError: #异常处理(即首次运行时新建配置文件)
