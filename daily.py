@@ -58,6 +58,7 @@ def login(user, pwd, dir):
                                 input[5].fill(pwd)
                                 screenshot_path = browser.find_by_id("tbLogonPanel").screenshot(imagURL, full=True) #因单独截取验证码图片会出现偏离而无法识别,故而截取整个Form,再对识别结果进行处理,最终返回一个截图的路径
                                 ocrResult = imgOcr(screenshot_path)
+                                os.remove(screenshot_path) #删除验证码截图
                                 if ocrResult is 0: #避免识别错误导致页面刷新从而出现bug
                                         logOut("图片路径:" + screenshot_path + ",识别失败")
                                         continue
@@ -70,8 +71,7 @@ def login(user, pwd, dir):
                         if dailyFlag:
                                 timeNow = time.strftime("%H:%M", time.localtime())
                                 browser.find_by_text("打卡").first.click()#直接执行js语句
-                                time.sleep(1)
-                                if browser.is_text_present(timeNow):
+                                if browser.find_by_tag("tr").last.find_by_tag("td").last.text[0:5] == timeNow:
                                         dailyFlag = False
                                         logOut("打卡成功")
                 except Exception as identify:
@@ -87,7 +87,7 @@ def init_time(): #初始化打卡时间
         logOut("Second_Login_Time:" + Second_Login_Time)
 
 def logOut(content): #日志处理方法
-        content = time.strftime("%D %H:%M:%S ", time.localtime()) + content + "\n" #记录当前时间
+        content = time.strftime("%D %H:%M:%S ", time.localtime()) + content #记录当前时间
         print(content) #命令行中输出日志
         with open("D:\\daily\\log.txt", "a+") as log:
                 log.write(content) #向log文件写入日志
@@ -131,6 +131,6 @@ while True:
                 login(USER_NAME,USER_PWD,DIR_NAME) #根据全局配置进行打卡
         if(time.strftime("%H:%M", time.localtime()) == "00:00"): 
                 init_time()
-        if(timeNow == First_Login_Time or timeNow == Second_Login_Time and not(weekDay == "0" or weekDay == "6")): #1.越过周六与周日;2.时钟与分钟一致时启动打卡
+        if((timeNow == First_Login_Time or timeNow == Second_Login_Time)and not(weekDay == "0" or weekDay == "6")): #1.越过周六与周日;2.时钟与分钟一致时启动打卡
                 login(USER_NAME,USER_PWD,DIR_NAME) #根据全局配置进行打卡
         time.sleep(60) #延时60秒
